@@ -8,7 +8,7 @@ import PlanRoutes from "./routes/plan.routes.js";
 
 function main() {
   const port = process.env.port;
-  const mongodb_url = process.env.mongodb_url;
+  const mongodb_url = process.env.MONGODB_URL;
   const app = express();
 
   const server = createServer(app);
