@@ -9,7 +9,7 @@ import dotenv from "dotenv";
 
 function main() {
   dotenv.config({ path: ".env.dev" });
-  const port = process.env.port;
+  const port = process.env.port || 8088;
   const mongodb_url = process.env.MONGODB_URL;
   const app = express();
 
