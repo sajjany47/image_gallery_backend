@@ -28,7 +28,7 @@ function main() {
 
   app.use(
     cors({
-      origin: "https://image-gallery-backend-piw3.onrender.com",
+      origin: "*",
       methods: ["GET", "POST"],
       credentials: true,
     })
