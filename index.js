@@ -2,13 +2,14 @@ import { createServer } from "http";
 import mongoose from "mongoose";
 import express from "express";
 import cors from "cors";
-import UserRoutes from "./routes/user.routes.js";
-import ProductRoutes from "./routes/product.routes.js";
-import PlanRoutes from "./routes/plan.routes.js";
-import dotenv from "dotenv";
+import UserRoutes from "./src/routes/user.routes.js";
+import ProductRoutes from "./src/routes/product.routes.js";
+import PlanRoutes from "./src/routes/plan.routes.js";
+// import dotenv from "dotenv";
+import "dotenv/config";
 
 function main() {
-  dotenv.config({ path: ".env.dev" });
+  // dotenv.config({ path: ".env.dev" });
   const port = process.env.port;
   const mongodb_url = process.env.MONGODB_URL;
   const app = express();
