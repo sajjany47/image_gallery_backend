@@ -2,9 +2,9 @@ import { createServer } from "http";
 import mongoose from "mongoose";
 import express from "express";
 import cors from "cors";
-import UserRoutes from "./src/routes/user.routes.js";
-import ProductRoutes from "./src/routes/product.routes.js";
-import PlanRoutes from "./src/routes/plan.routes.js";
+import UserRoutes from "./routes/user.routes.js";
+import ProductRoutes from "./routes/product.routes.js";
+import PlanRoutes from "./routes/plan.routes.js";
 import dotenv from "dotenv";
 
 function main() {
