@@ -6,6 +6,7 @@ import UserRoutes from "./routes/user.routes.js";
 import ProductRoutes from "./routes/product.routes.js";
 import PlanRoutes from "./routes/plan.routes.js";
 import dotenv from "dotenv";
+import "../src/api/match/match.cron.js";
 
 function main() {
   dotenv.config({ path: ".env.dev" });
@@ -31,7 +32,7 @@ function main() {
       origin: "*",
       methods: ["GET", "POST"],
       credentials: true,
-    })
+    }),
   );
 
   app.use("/user", UserRoutes);
