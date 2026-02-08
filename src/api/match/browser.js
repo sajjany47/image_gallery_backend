@@ -20,9 +20,14 @@ export async function getBrowser() {
   //     defaultViewport: { width: 1280, height: 800 },
   //   });
   // }
-
   return puppeteer.launch({
-    headless: true,
+    headless: "new",
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+    ],
     defaultViewport: { width: 1280, height: 800 },
   });
 }
