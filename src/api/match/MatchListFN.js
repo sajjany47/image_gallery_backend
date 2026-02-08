@@ -15,6 +15,20 @@ export const getMatchListFN = async () => {
     // ---------------- DELETE OLD MATCHES ----------------
     const cutoffDate = moment().subtract(3, "days").format("YYYY-MM-DD");
 
+    // 1️⃣ Old matches list
+    const oldMatchList = await Match.find(
+      { formatDate: { $lte: cutoffDate } },
+      { _id: 1 },
+    );
+
+    const matchIds = oldMatchList.map((m) => m._id);
+    // 2️⃣ MatchDetails delete
+    if (matchIds.length > 0) {
+      await MatchDetails.deleteMany({
+        matchId: { $in: matchIds },
+      });
+    }
+
     await Match.deleteMany({
       formatDate: { $lte: cutoffDate },
     });
