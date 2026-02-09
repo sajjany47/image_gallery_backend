@@ -1,4 +1,4 @@
-import { getBrowser } from "../utils/browser.js";
+import { getBrowser } from "./browser.js";
 
 export const SquadList = async (url, squad = []) => {
   const browser = await getBrowser();
