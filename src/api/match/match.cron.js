@@ -1,5 +1,6 @@
 import cron from "node-cron";
 import { getMatchListFN, matchStatusUpdate } from "./MatchListFN.js";
+import logger from "./logger.js";
 
 /* ===============================
    🕐 DAILY MATCH LIST (1 AM)
@@ -25,17 +26,21 @@ cron.schedule(
 
 // Every 2 hour
 // Every 30 minutes
+logger.info("🚀 Cron file loaded");
+
 cron.schedule(
   "*/30 * * * *",
   async () => {
-    console.log("⏰ Match Status CRON STARTED (Every 30 minutes)");
+    logger.info("⏰ Match Status CRON STARTED");
 
-    const result = await matchStatusUpdate();
-    console.log("🟢 Match Status CRON RESULT:", result);
+    try {
+      const result = await matchStatusUpdate();
+      logger.info(`🟢 CRON RESULT: ${JSON.stringify(result)}`);
+    } catch (err) {
+      logger.error(`🔴 CRON ERROR: ${err.message}`);
+    }
   },
   {
     timezone: "Asia/Kolkata",
   },
 );
-
-console.log("✅ CRON jobs initialized");

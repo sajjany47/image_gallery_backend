@@ -28,6 +28,7 @@
     "nodemon": "^3.1.4",
     "puppeteer": "^24.37.2",
     "puppeteer-core": "^24.37.2",
+    "winston": "^3.19.0",
     "yup": "^1.4.0"
   }
 }

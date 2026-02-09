@@ -172,6 +172,8 @@ export const matchStatusUpdate = async () => {
       isPlayingPlayerFetched: false,
     });
 
+    logger.info(`🟢 CRON fixtures: ${JSON.stringify(fixtures)}`);
+
     if (!fixtures.length) {
       return {
         success: true,
@@ -198,7 +200,7 @@ export const matchStatusUpdate = async () => {
         message: "No matches started yet",
       };
     }
-
+    logger.info(`🟢 CRON fixtures: ${JSON.stringify(startedMatches)}`);
     let processed = 0;
 
     /* ================= CHUNK PROCESSING ================= */
