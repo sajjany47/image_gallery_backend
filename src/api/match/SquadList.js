@@ -1,4 +1,4 @@
-import { getBrowser } from "./browser.js";
+import { getBrowser } from "../utils/browser.js";
 
 export const SquadList = async (url, squad = []) => {
   const browser = await getBrowser();
@@ -13,14 +13,16 @@ export const SquadList = async (url, squad = []) => {
 
     page.setDefaultTimeout(60000);
 
-    await page.goto(url, { waitUntil: "networkidle2" });
+    // ❌ networkidle2 mat use karo
+    await page.goto(url, {
+      waitUntil: "domcontentloaded",
+      timeout: 60000,
+    });
 
-    // wait for playing XI section
-    await page.waitForSelector(".playingxi", { timeout: 30000 });
+    // safer selector
+    await page.waitForSelector(".playingxi-button", { timeout: 60000 });
 
-    /* ================= SCRAPE LIVE PLAYING XI ================= */
-
-    const latestSquad = await page.evaluate(() => {
+    const latestSquad = await page.evaluate(async () => {
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       const output = [];
 
@@ -32,7 +34,6 @@ export const SquadList = async (url, squad = []) => {
         Array.from(document.querySelectorAll(".playingxi-card-row")).map(
           (row) => {
             const a = row.querySelector("a");
-
             return {
               name: a?.getAttribute("title") || "",
               role:
@@ -47,66 +48,54 @@ export const SquadList = async (url, squad = []) => {
           },
         );
 
-      return (async () => {
-        for (let i = 0; i < buttons.length; i++) {
-          buttons[i].click();
-          await sleep(400);
+      for (let i = 0; i < buttons.length; i++) {
+        buttons[i].click();
+        await sleep(1200); // anti-bot delay
 
-          output.push({
-            teamName: buttons[i].textContent?.trim() || "",
-            players: extractPlayers(),
-          });
-        }
-        return output;
-      })();
+        output.push({
+          teamName: buttons[i].textContent?.trim() || "",
+          players: extractPlayers(),
+        });
+      }
+
+      return output;
     });
 
     if (!Array.isArray(latestSquad) || !latestSquad.length) {
       return squad;
     }
 
-    /* ================= MERGE WITH DB SQUAD ================= */
-
-    const preparedSquad = squad.map((team) => {
+    // merge with DB squad
+    return squad.map((team) => {
       const liveTeam = latestSquad.find((t) => t.teamName === team.teamName);
 
       if (!liveTeam) return team;
 
-      const fullPlayerList = [
+      const fullPlayers = [
         ...(team.playingPlayers || []),
         ...(team.benchPlayers || []),
       ];
 
-      const playingPlayers = fullPlayerList.filter((lp) =>
-        liveTeam.players.some(
-          (fp) =>
-            (fp.playerUrl && fp.playerUrl === lp.playerUrl) ||
-            fp.name === lp.name,
-        ),
-      );
-
-      const benchPlayers = fullPlayerList.filter(
-        (lp) =>
-          !liveTeam.players.some(
-            (fp) =>
-              (fp.playerUrl && fp.playerUrl === lp.playerUrl) ||
-              fp.name === lp.name,
-          ),
-      );
-
       return {
         ...team,
-        playingPlayers,
-        benchPlayers,
+        playingPlayers: fullPlayers.filter((p) =>
+          liveTeam.players.some(
+            (lp) => lp.playerUrl === p.playerUrl || lp.name === p.name,
+          ),
+        ),
+        benchPlayers: fullPlayers.filter(
+          (p) =>
+            !liveTeam.players.some(
+              (lp) => lp.playerUrl === p.playerUrl || lp.name === p.name,
+            ),
+        ),
       };
     });
-
-    return preparedSquad;
   } catch (err) {
     console.error("❌ SquadList error:", err.message);
     return squad;
   } finally {
+    // ✅ only page close
     await page.close().catch(() => null);
-    await browser.close().catch(() => null);
   }
 };

@@ -1,5 +1,6 @@
 import moment from "moment";
 import Match from "./MatchModel.js";
+import mongoose from "mongoose";
 import MatchDetails from "./MatchDetailsModel.js";
 import { CrexNext3DaysFixturesArray } from "./CrexNext3DaysFixturesArray.js";
 import { CrexV2Details } from "./CrexV2Details.js";
@@ -164,74 +165,59 @@ export const getMatchListFN = async () => {
 
 export const matchStatusUpdate = async () => {
   try {
-    console.log("CRON HIT ✅", new Date().toISOString());
+    logger.info(`⏰ CRON HIT ${new Date().toISOString()}`);
+
     const cutoffDate = moment().subtract(1, "days").format("YYYY-MM-DD");
-    /* ================= FETCH UNPROCESSED MATCHES ================= */
 
     const fixtures = await Match.find({
       formatDate: { $gte: cutoffDate },
       isPlayingPlayerFetched: false,
     });
 
-    logger.info(`🟢 CRON fixtures: ${JSON.stringify(fixtures)}`);
+    logger.info(`🟢 Fixtures found: ${fixtures.length}`);
 
     if (!fixtures.length) {
-      return {
-        success: true,
-        message: "No fixtures found",
-      };
+      return { success: true, message: "No fixtures found" };
     }
-
-    /* ================= FILTER ONLY STARTED MATCHES ================= */
 
     const startedMatches = fixtures.filter((match) => {
       if (!match.matchDate || !match.startTime) return false;
 
-      const matchStartDateTime = moment(
+      const start = moment(
         `${match.matchDate} ${match.startTime}`,
         "ddd, D MMM YYYY h:mm A",
       );
 
-      return matchStartDateTime.isSameOrBefore(moment());
+      return start.isSameOrBefore(moment());
     });
 
-    if (!startedMatches.length) {
-      return {
-        success: true,
-        message: "No matches started yet",
-      };
-    }
-    logger.info(`🟢 CRON fixtures: ${JSON.stringify(startedMatches)}`);
-    let processed = 0;
+    logger.info(`🟢 Started matches: ${startedMatches.length}`);
 
-    /* ================= CHUNK PROCESSING ================= */
+    let processed = 0;
 
     for (let i = 0; i < startedMatches.length; i += CHUNK_SIZE) {
       const chunk = startedMatches.slice(i, i + CHUNK_SIZE);
 
-      const matchBulkOps = [];
+      const bulkOps = [];
 
       for (const match of chunk) {
-        console.log("Processing match:", match._id);
         try {
+          await delay(5000); // anti-bot
+
           const matchDetails = await MatchDetails.findOne({
-            matchId: new mongoose.Types.ObjectId(match._id.toString()),
+            matchId: new mongoose.Types.ObjectId(match._id),
           });
 
           if (!matchDetails?.squads?.length) continue;
 
           const latestSquad = await SquadList(match.url, matchDetails.squads);
 
-          // Update squads
           await MatchDetails.updateOne(
-            {
-              matchId: new mongoose.Types.ObjectId(match._id.toString()),
-            },
+            { matchId: match._id },
             { $set: { squads: latestSquad } },
           );
 
-          // Mark match as processed
-          matchBulkOps.push({
+          bulkOps.push({
             updateOne: {
               filter: { _id: match._id },
               update: {
@@ -245,12 +231,14 @@ export const matchStatusUpdate = async () => {
 
           processed++;
         } catch (err) {
-          console.error("❌ Squad update failed:", match.url);
+          logger.error(`❌ Squad update failed`);
+          logger.error(`🔗 ${match.url}`);
+          logger.error(err.message);
         }
       }
 
-      if (matchBulkOps.length) {
-        await Match.bulkWrite(matchBulkOps);
+      if (bulkOps.length) {
+        await Match.bulkWrite(bulkOps);
       }
     }
 
@@ -260,9 +248,9 @@ export const matchStatusUpdate = async () => {
       startedMatches: startedMatches.length,
       processed,
     };
-  } catch (error) {
-    console.error("CRON ERROR ❌", error);
-
-    return { success: false, error: FormatErrorMessage(error) };
+  } catch (err) {
+    logger.error("❌ CRON ERROR");
+    logger.error(err.stack);
+    return { success: false };
   }
 };

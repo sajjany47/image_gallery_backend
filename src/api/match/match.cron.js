@@ -25,13 +25,13 @@ cron.schedule(
    =============================== */
 
 // Every 2 hour
-// Every 30 minutes
+// Every 5 minutes
 logger.info("🚀 Cron file loaded");
 
 cron.schedule(
-  "*/30 * * * *",
+  "*/5 * * * *",
   async () => {
-    logger.info("⏰ Match Status CRON STARTED");
+    logger.info("⏰ Match Status CRON STARTED (Every 5 minutes)");
 
     try {
       const result = await matchStatusUpdate();
