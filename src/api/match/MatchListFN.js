@@ -170,7 +170,7 @@ export const matchStatusUpdate = async () => {
     const fixtures = await Match.find({
       formatDate: { $gte: cutoffDate },
       isPlayingPlayerFetched: false,
-    }).lean();
+    });
 
     if (!fixtures.length) {
       return {

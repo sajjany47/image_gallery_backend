@@ -24,10 +24,11 @@ cron.schedule(
    =============================== */
 
 // Every 2 hour
+// Every 30 minutes
 cron.schedule(
-  "0 */2 * * *",
+  "*/30 * * * *",
   async () => {
-    console.log("⏰ Match Status CRON STARTED (Every 2 hours)");
+    console.log("⏰ Match Status CRON STARTED (Every 30 minutes)");
 
     const result = await matchStatusUpdate();
     console.log("🟢 Match Status CRON RESULT:", result);
