@@ -5,6 +5,7 @@ import { CrexNext3DaysFixturesArray } from "./CrexNext3DaysFixturesArray.js";
 import { CrexV2Details } from "./CrexV2Details.js";
 import { SquadList } from "./SquadList.js";
 import { FormatErrorMessage, NormalizeCrexUrl } from "../../utilis/utilis.js";
+import logger from "./logger.js";
 
 const CHUNK_SIZE = 10;
 
