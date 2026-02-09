@@ -29,9 +29,9 @@ cron.schedule(
 logger.info("🚀 Cron file loaded");
 
 cron.schedule(
-  "*/5 * * * *",
+  "0 */2 * * *",
   async () => {
-    logger.info("⏰ Match Status CRON STARTED (Every 5 minutes)");
+    logger.info("⏰ Match Status CRON STARTED (Every 2 hours)");
 
     try {
       const result = await matchStatusUpdate();
