@@ -8,7 +8,8 @@ import { SquadList } from "./SquadList.js";
 import { FormatErrorMessage, NormalizeCrexUrl } from "../../utilis/utilis.js";
 import logger from "./logger.js";
 
-const CHUNK_SIZE = 10;
+const CHUNK_SIZE = 1;
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export const getMatchListFN = async () => {
   try {
